@@ -1,0 +1,105 @@
+@page
+@model ExpenseManagement.Pages.ApprovalsModel
+@{
+    ViewData["Title"] = "Approvals";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>Expense Approvals</h1>
+        <p>Review and approve or reject submitted expense claims</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ActionMessage))
+    {
+        var isApproval = Model.ActionMessage.Contains("approved");
+        <div class="alert @(isApproval ? "alert-success" : "alert-error")">
+            @(isApproval ? "✅" : "❌") @Model.ActionMessage
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Pending Approvals</h2>
+            <span class="badge badge-submitted">@Model.PendingExpenses.Count pending</span>
+        </div>
+
+        @if (Model.PendingExpenses.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var exp in Model.PendingExpenses)
+                    {
+                        <tr>
+                            <td class="muted">@exp.ExpenseDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div style="font-weight:500;">@exp.UserName</div>
+                                <div class="muted" style="font-size:0.75rem;">@exp.UserEmail</div>
+                            </td>
+                            <td>@exp.CategoryName</td>
+                            <td class="amount">@exp.AmountFormatted</td>
+                            <td class="muted" style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                @exp.Description
+                            </td>
+                            <td class="muted">
+                                @(exp.SubmittedAt.HasValue ? exp.SubmittedAt.Value.ToString("dd MMM yyyy HH:mm") : "—")
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:8px;">
+                                    <form method="post" asp-page-handler="Approve" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="expenseId" value="@exp.ExpenseId" />
+                                        <button type="submit" class="btn btn-success btn-sm"
+                                                onclick="return confirm('Approve expense #@exp.ExpenseId for @exp.AmountFormatted?')">
+                                            ✓ Approve
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-page-handler="Reject" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="expenseId" value="@exp.ExpenseId" />
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Reject expense #@exp.ExpenseId?')">
+                                            ✗ Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p>No expenses pending approval. All caught up! 🎉</p>
+            </div>
+        }
+    </div>
+
+    <!-- Info card -->
+    <div class="card">
+        <div class="card-body">
+            <p style="color:#64748b; font-size:0.85rem; line-height:1.7;">
+                <strong style="color:#374151;">ℹ️ Manager Actions</strong><br>
+                Only expenses with status <span class="badge badge-submitted">Submitted</span> appear here.<br>
+                Approved expenses appear as <span class="badge badge-approved">Approved</span> in the Expenses list.<br>
+                Rejected expenses appear as <span class="badge badge-rejected">Rejected</span> and can be revised by the employee.
+            </p>
+        </div>
+    </div>
+</div>

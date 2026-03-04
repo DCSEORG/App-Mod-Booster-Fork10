@@ -1,0 +1,103 @@
+@page
+@model ExpenseManagement.Pages.NewExpenseModel
+@{
+    ViewData["Title"] = "New Expense";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>New Expense</h1>
+        <p>Submit a new expense claim for approval</p>
+    </div>
+
+    <div style="max-width: 640px;">
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success">
+                ✅ @Model.SuccessMessage
+                <a href="/Expenses" style="color:#166534; font-weight:600; margin-left:8px;">View all expenses →</a>
+            </div>
+        }
+
+        @if (!ModelState.IsValid && ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-error">
+                Please correct the errors below and try again.
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Expense Details</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="Input.Amount">Amount (£)</label>
+                            <input asp-for="Input.Amount"
+                                   type="number"
+                                   step="0.01"
+                                   min="0.01"
+                                   max="100000"
+                                   placeholder="0.00"
+                                   class="form-control @(ModelState["Input.Amount"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                            <span asp-validation-for="Input.Amount" class="field-validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.ExpenseDate">Expense Date</label>
+                            <input asp-for="Input.ExpenseDate"
+                                   type="date"
+                                   class="form-control @(ModelState["Input.ExpenseDate"]?.Errors.Count > 0 ? "is-invalid" : "")" />
+                            <span asp-validation-for="Input.ExpenseDate" class="field-validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.CategoryId">Category</label>
+                        <select asp-for="Input.CategoryId"
+                                asp-items="Model.CategoryOptions"
+                                class="form-control @(ModelState["Input.CategoryId"]?.Errors.Count > 0 ? "is-invalid" : "")">
+                            <option value="">— Select a category —</option>
+                        </select>
+                        <span asp-validation-for="Input.CategoryId" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Input.Description">Description</label>
+                        <textarea asp-for="Input.Description"
+                                  rows="3"
+                                  placeholder="Describe the purpose of this expense…"
+                                  class="form-control @(ModelState["Input.Description"]?.Errors.Count > 0 ? "is-invalid" : "")"></textarea>
+                        <span asp-validation-for="Input.Description" class="field-validation-error"></span>
+                    </div>
+
+                    <!-- Hidden: default to user 1 (Alice) for demo -->
+                    <input type="hidden" asp-for="Input.UserId" value="1" />
+
+                    <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Save Expense
+                        </button>
+                        <a href="/Expenses" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+            <div class="card-body">
+                <p style="color:#64748b; font-size:0.85rem; line-height:1.6;">
+                    <strong style="color:#374151;">💡 How it works:</strong><br>
+                    1. Save the expense (status: <span class="badge badge-draft">Draft</span>)<br>
+                    2. Submit it from the <a href="/Expenses" style="color:#6366f1;">Expenses</a> page<br>
+                    3. A manager will approve or reject it from the <a href="/Approvals" style="color:#6366f1;">Approvals</a> page
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
