@@ -1,0 +1,94 @@
+@page
+@model ExpenseManagement.Pages.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Overview of all expense activity</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="label">Total Expenses</div>
+            <div class="value">@Model.Stats.TotalExpenses</div>
+            <div class="sub">All time</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+            <div class="label">Pending Approvals</div>
+            <div class="value">@Model.Stats.PendingApprovals</div>
+            <div class="sub">Awaiting review</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="label">Approved Amount</div>
+            <div class="value">@Model.Stats.ApprovedAmountFormatted</div>
+            <div class="sub">Total approved spend</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid #22c55e;">
+            <div class="label">Approved Count</div>
+            <div class="value">@Model.Stats.ApprovedCount</div>
+            <div class="sub">Approved expenses</div>
+        </div>
+    </div>
+
+    <!-- Recent Expenses Table -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Recent Expenses</h2>
+            <a href="/Expenses" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+
+        @if (Model.RecentExpenses.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var exp in Model.RecentExpenses)
+                    {
+                        <tr>
+                            <td class="muted">@exp.ExpenseDate.ToString("dd MMM yyyy")</td>
+                            <td>@exp.UserName</td>
+                            <td>@exp.CategoryName</td>
+                            <td class="amount">@exp.AmountFormatted</td>
+                            <td>
+                                @{
+                                    var badgeClass = exp.StatusName.ToLower() switch
+                                    {
+                                        "approved"  => "badge-approved",
+                                        "submitted" => "badge-submitted",
+                                        "rejected"  => "badge-rejected",
+                                        _           => "badge-draft"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@exp.StatusName</span>
+                            </td>
+                            <td class="muted">@(exp.Description?.Length > 50 ? exp.Description[..50] + "…" : exp.Description)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 14H5a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2h-4"/>
+                    <path d="M12 3v11m0 0l-3-3m3 3l3-3"/>
+                </svg>
+                <p>No expenses found. <a href="/NewExpense" style="color:#6366f1;">Add your first expense →</a></p>
+            </div>
+        }
+    </div>
+</div>

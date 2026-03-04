@@ -1,0 +1,159 @@
+@page
+@model ExpenseManagement.Pages.ExpensesModel
+@{
+    ViewData["Title"] = "Expenses";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>All Expenses</h1>
+        <p>Browse, search and manage expense records</p>
+    </div>
+
+    <!-- Filter Bar -->
+    <form method="get" class="filter-bar">
+        <input type="text"
+               name="Filter"
+               value="@Model.Filter"
+               placeholder="Search by employee, category, status or description…"
+               class="form-control search-input" />
+        <button type="submit" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+        </button>
+        @if (!string.IsNullOrEmpty(Model.Filter))
+        {
+            <a href="/Expenses" class="btn btn-secondary">Clear</a>
+        }
+        <a href="/NewExpense" class="btn btn-primary" style="margin-left:auto;">+ New Expense</a>
+    </form>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>
+                @if (!string.IsNullOrEmpty(Model.Filter))
+                {
+                    <span>Results for "@Model.Filter"</span>
+                }
+                else
+                {
+                    <span>All Expenses</span>
+                }
+            </h2>
+            <span class="muted">@Model.Expenses.Count record@(Model.Expenses.Count != 1 ? "s" : "")</span>
+        </div>
+
+        @if (Model.Expenses.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var exp in Model.Expenses)
+                    {
+                        <tr>
+                            <td class="muted">@exp.ExpenseDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div style="font-weight:500;">@exp.UserName</div>
+                                @if (!string.IsNullOrEmpty(exp.UserEmail))
+                                {
+                                    <div class="muted" style="font-size:0.75rem;">@exp.UserEmail</div>
+                                }
+                            </td>
+                            <td>@exp.CategoryName</td>
+                            <td class="amount">@exp.AmountFormatted</td>
+                            <td>
+                                @{
+                                    var badgeClass = exp.StatusName.ToLower() switch
+                                    {
+                                        "approved"  => "badge-approved",
+                                        "submitted" => "badge-submitted",
+                                        "rejected"  => "badge-rejected",
+                                        _           => "badge-draft"
+                                    };
+                                }
+                                <span class="badge @badgeClass">@exp.StatusName</span>
+                            </td>
+                            <td class="muted" style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                @exp.Description
+                            </td>
+                            <td>
+                                @if (exp.StatusName == "Draft")
+                                {
+                                    <form method="post" action="/api/expenses/@exp.ExpenseId/submit" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="button"
+                                                class="btn btn-secondary btn-sm"
+                                                onclick="submitExpense(@exp.ExpenseId)">
+                                            Submit
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <p>
+                    @if (!string.IsNullOrEmpty(Model.Filter))
+                    {
+                        <span>No expenses match "@Model.Filter". <a href="/Expenses" style="color:#6366f1;">Clear filter</a></span>
+                    }
+                    else
+                    {
+                        <span>No expenses yet. <a href="/NewExpense" style="color:#6366f1;">Add one now →</a></span>
+                    }
+                </p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+async function submitExpense(id) {
+    if (!confirm('Submit this expense for approval?')) return;
+    try {
+        const res = await fetch('/api/expenses/' + id + '/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json',
+                       'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]')?.value || '' }
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Expense submitted for approval!', 'success');
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showToast(data.message || 'Failed to submit expense.', 'error');
+        }
+    } catch(e) {
+        showToast('Network error. Please try again.', 'error');
+    }
+}
+
+function showToast(msg, type) {
+    const div = document.createElement('div');
+    div.className = 'alert alert-' + (type === 'success' ? 'success' : 'error');
+    div.style.cssText = 'position:fixed;top:80px;right:24px;z-index:9999;min-width:280px;box-shadow:0 4px 12px rgba(0,0,0,0.15)';
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+</script>
+}

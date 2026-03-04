@@ -1,0 +1,97 @@
+@page
+@model ExpenseManagement.Pages.ApiDocsModel
+@{
+    ViewData["Title"] = "API Docs";
+}
+
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1>API Documentation</h1>
+        <p>Explore and test the Expense Management REST API</p>
+    </div>
+
+    <!-- Launch Swagger UI -->
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;">
+            <div>
+                <h2 style="font-size:1.1rem; margin-bottom:8px;">Swagger UI</h2>
+                <p style="color:#64748b; font-size:0.9rem;">
+                    Interactive API explorer — try every endpoint directly from your browser.
+                </p>
+            </div>
+            <a href="/swagger" target="_blank" class="btn btn-primary" style="font-size:1rem; padding:12px 24px;">
+                Open Swagger UI →
+            </a>
+        </div>
+    </div>
+
+    <!-- Endpoint Reference -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Available Endpoints</h2>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var endpoints = new[]
+                        {
+                            ("GET",  "/api/expenses",               "Get all expenses with joins"),
+                            ("GET",  "/api/expenses/{id}",          "Get a single expense by ID"),
+                            ("POST", "/api/expenses",               "Create a new expense (Draft)"),
+                            ("POST", "/api/expenses/{id}/submit",   "Submit expense for approval"),
+                            ("POST", "/api/expenses/{id}/approve",  "Approve a submitted expense"),
+                            ("POST", "/api/expenses/{id}/reject",   "Reject a submitted expense"),
+                            ("GET",  "/api/expenses/pending",       "Get pending (Submitted) expenses"),
+                            ("GET",  "/api/dashboard",              "Get dashboard aggregate statistics"),
+                        };
+                    }
+                    @foreach (var (method, path, desc) in endpoints)
+                    {
+                        <tr>
+                            <td>
+                                @{
+                                    var methodColor = method == "GET"
+                                        ? "#3b82f6"
+                                        : "#22c55e";
+                                    var methodBg = method == "GET"
+                                        ? "#dbeafe"
+                                        : "#dcfce7";
+                                }
+                                <span style="background:@methodBg; color:@methodColor; padding:3px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; font-family:monospace;">
+                                    @method
+                                </span>
+                            </td>
+                            <td style="font-family:monospace; font-size:0.85rem; color:#6366f1;">@path</td>
+                            <td class="muted">@desc</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Auth note -->
+    <div class="card" style="margin-top:20px;">
+        <div class="card-body">
+            <h3 style="font-size:0.95rem; margin-bottom:12px;">🔐 Authentication Notes</h3>
+            <div style="color:#64748b; font-size:0.85rem; line-height:1.8;">
+                <p><strong style="color:#374151;">Production:</strong> Azure SQL accessed via Managed Identity (<code>Authentication=Active Directory Managed Identity</code>).</p>
+                <p><strong style="color:#374151;">Local Dev:</strong> Connection string uses <code>Authentication=Active Directory Default</code> — run <code>az login</code> first.</p>
+                <p><strong style="color:#374151;">Managed Identity Setup:</strong></p>
+                <ol style="padding-left:20px; margin-top:4px;">
+                    <li>Assign a User-Assigned Managed Identity to the App Service.</li>
+                    <li>Set <code>AZURE_CLIENT_ID</code> app setting to the managed identity client ID.</li>
+                    <li>Grant the managed identity <em>db_datareader / db_datawriter</em> on the Azure SQL database.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
