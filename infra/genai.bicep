@@ -55,6 +55,7 @@ resource gpt4oDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-
     model: {
       format:  'OpenAI'
       name:    'gpt-4o'
+      version: '2024-05-13'
     }
     raiPolicyName: 'Microsoft.Default'
   }
@@ -65,7 +66,7 @@ resource aiSearch 'Microsoft.Search/searchServices@2023-11-01' = {
   name:     searchName
   location: location
   sku: {
-    name: 'standard'  // S0
+    name: 'standard'  // S0 — Bicep type system requires lowercase for Search SKU names
   }
   properties: {
     replicaCount:    1

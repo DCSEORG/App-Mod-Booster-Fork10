@@ -75,20 +75,26 @@ resource northwindDb 'Microsoft.Sql/servers/databases@2021-11-01' = {
   }
 }
 
-// ── Grant ##MS_DatabaseManager## to the managed identity ─────
-// This uses the server-level Active Directory administrator API
-// to add the managed identity as a server-level principal so
-// it can create / manage databases (##MS_DatabaseManager##).
-resource managedIdentityAdmin 'Microsoft.Sql/servers/administrators@2021-11-01' = {
-  parent: sqlServer
-  name:   'ActiveDirectory'
+// ── Grant managed identity SQL DB Contributor on the server ──
+// Azure SQL supports only ONE Active Directory administrator per
+// server (already set inline on the sqlServer resource above).
+// To give the managed identity the equivalent of the T-SQL
+// ##MS_DatabaseManager## role via ARM/Bicep we assign the
+// built-in "SQL DB Contributor" RBAC role at the server scope.
+// This lets the identity create and manage databases without
+// requiring a second AD administrator entry.
+//
+// Built-in role GUID: 9b7fa17d-e63e-47b0-bb0a-15c516ac86ec
+var sqlDbContributorRoleId = '9b7fa17d-e63e-47b0-bb0a-15c516ac86ec'
+
+resource managedIdentitySqlContrib 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name:  guid(sqlServer.id, managedIdentityPrincipalId, sqlDbContributorRoleId)
+  scope: sqlServer
   properties: {
-    administratorType: 'ActiveDirectory'
-    login:             'managed-identity-admin'
-    sid:               managedIdentityPrincipalId
-    tenantId:          subscription().tenantId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', sqlDbContributorRoleId)
+    principalId:      managedIdentityPrincipalId
+    principalType:    'ServicePrincipal'
   }
-  dependsOn: [aadOnlyAuth]
 }
 
 // ── Outputs ──────────────────────────────────────────────────
