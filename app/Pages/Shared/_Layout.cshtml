@@ -218,7 +218,7 @@
         .form-control.is-invalid { border-color: #ef4444; }
         .field-validation-error { color: #ef4444; font-size: 0.8rem; margin-top: 4px; display: block; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @@media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+        /* form-row responsive handled in the 768px breakpoint above */
 
         /* ── Filter Bar ──────────────────────────────────────────────── */
         .filter-bar {
@@ -250,6 +250,7 @@
             .topnav { gap: 16px; }
             .topnav nav a { padding: 6px 10px; font-size: 0.8rem; }
             .page-wrapper { padding: 20px 16px; }
+            .form-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>

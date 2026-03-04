@@ -140,29 +140,63 @@ public class ExpenseService : IExpenseService
     };
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Column-name constants (avoids magic strings scattered through reader code)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private static class StatCol
+    {
+        public const string TotalExpenses       = "TotalExpenses";
+        public const string PendingApprovals    = "PendingApprovals";
+        public const string ApprovedAmountMinor = "ApprovedAmountMinor";
+        public const string ApprovedCount       = "ApprovedCount";
+    }
+
+    private static class Col
+    {
+        public const string ExpenseId      = "ExpenseId";
+        public const string UserId         = "UserId";
+        public const string UserName       = "UserName";
+        public const string UserEmail      = "UserEmail";
+        public const string CategoryId     = "CategoryId";
+        public const string CategoryName   = "CategoryName";
+        public const string StatusId       = "StatusId";
+        public const string StatusName     = "StatusName";
+        public const string AmountMinor    = "AmountMinor";
+        public const string Currency       = "Currency";
+        public const string ExpenseDate    = "ExpenseDate";
+        public const string Description    = "Description";
+        public const string ReceiptFile    = "ReceiptFile";
+        public const string SubmittedAt    = "SubmittedAt";
+        public const string ReviewedBy     = "ReviewedBy";
+        public const string ReviewedByName = "ReviewedByName";
+        public const string ReviewedAt     = "ReviewedAt";
+        public const string CreatedAt      = "CreatedAt";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Map SqlDataReader → Expense
     // ─────────────────────────────────────────────────────────────────────────
 
     private static Expense MapExpense(SqlDataReader r) => new()
     {
-        ExpenseId     = r.GetInt32("ExpenseId"),
-        UserId        = r.GetInt32("UserId"),
-        UserName      = r.IsDBNull("UserName")  ? string.Empty : r.GetString("UserName"),
-        UserEmail     = r.IsDBNull("UserEmail") ? string.Empty : r.GetString("UserEmail"),
-        CategoryId    = r.GetInt32("CategoryId"),
-        CategoryName  = r.IsDBNull("CategoryName")  ? string.Empty : r.GetString("CategoryName"),
-        StatusId      = r.GetInt32("StatusId"),
-        StatusName    = r.IsDBNull("StatusName")    ? string.Empty : r.GetString("StatusName"),
-        AmountMinor   = r.GetInt32("AmountMinor"),
-        Currency      = r.IsDBNull("Currency") ? "GBP" : r.GetString("Currency"),
-        ExpenseDate   = r.GetDateTime("ExpenseDate"),
-        Description   = r.IsDBNull("Description")   ? null : r.GetString("Description"),
-        ReceiptFile   = r.IsDBNull("ReceiptFile")   ? null : r.GetString("ReceiptFile"),
-        SubmittedAt   = r.IsDBNull("SubmittedAt")   ? null : r.GetDateTime("SubmittedAt"),
-        ReviewedBy    = r.IsDBNull("ReviewedBy")    ? null : r.GetInt32("ReviewedBy"),
-        ReviewedByName= r.IsDBNull("ReviewedByName")? null : r.GetString("ReviewedByName"),
-        ReviewedAt    = r.IsDBNull("ReviewedAt")    ? null : r.GetDateTime("ReviewedAt"),
-        CreatedAt     = r.GetDateTime("CreatedAt")
+        ExpenseId     = r.GetInt32(Col.ExpenseId),
+        UserId        = r.GetInt32(Col.UserId),
+        UserName      = r.IsDBNull(Col.UserName)      ? string.Empty : r.GetString(Col.UserName),
+        UserEmail     = r.IsDBNull(Col.UserEmail)     ? string.Empty : r.GetString(Col.UserEmail),
+        CategoryId    = r.GetInt32(Col.CategoryId),
+        CategoryName  = r.IsDBNull(Col.CategoryName)  ? string.Empty : r.GetString(Col.CategoryName),
+        StatusId      = r.GetInt32(Col.StatusId),
+        StatusName    = r.IsDBNull(Col.StatusName)    ? string.Empty : r.GetString(Col.StatusName),
+        AmountMinor   = r.GetInt32(Col.AmountMinor),
+        Currency      = r.IsDBNull(Col.Currency)      ? "GBP"        : r.GetString(Col.Currency),
+        ExpenseDate   = r.GetDateTime(Col.ExpenseDate),
+        Description   = r.IsDBNull(Col.Description)   ? null : r.GetString(Col.Description),
+        ReceiptFile   = r.IsDBNull(Col.ReceiptFile)   ? null : r.GetString(Col.ReceiptFile),
+        SubmittedAt   = r.IsDBNull(Col.SubmittedAt)   ? null : r.GetDateTime(Col.SubmittedAt),
+        ReviewedBy    = r.IsDBNull(Col.ReviewedBy)    ? null : r.GetInt32(Col.ReviewedBy),
+        ReviewedByName= r.IsDBNull(Col.ReviewedByName)? null : r.GetString(Col.ReviewedByName),
+        ReviewedAt    = r.IsDBNull(Col.ReviewedAt)    ? null : r.GetDateTime(Col.ReviewedAt),
+        CreatedAt     = r.GetDateTime(Col.CreatedAt)
     };
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -360,10 +394,10 @@ public class ExpenseService : IExpenseService
             {
                 var stats = new DashboardStats
                 {
-                    TotalExpenses       = reader.IsDBNull("TotalExpenses")       ? 0 : reader.GetInt32("TotalExpenses"),
-                    PendingApprovals    = reader.IsDBNull("PendingApprovals")    ? 0 : reader.GetInt32("PendingApprovals"),
-                    ApprovedAmountMinor = reader.IsDBNull("ApprovedAmountMinor") ? 0 : reader.GetInt32("ApprovedAmountMinor"),
-                    ApprovedCount       = reader.IsDBNull("ApprovedCount")       ? 0 : reader.GetInt32("ApprovedCount")
+                    TotalExpenses       = reader.IsDBNull(StatCol.TotalExpenses)       ? 0 : reader.GetInt32(StatCol.TotalExpenses),
+                    PendingApprovals    = reader.IsDBNull(StatCol.PendingApprovals)    ? 0 : reader.GetInt32(StatCol.PendingApprovals),
+                    ApprovedAmountMinor = reader.IsDBNull(StatCol.ApprovedAmountMinor) ? 0 : reader.GetInt32(StatCol.ApprovedAmountMinor),
+                    ApprovedCount       = reader.IsDBNull(StatCol.ApprovedCount)       ? 0 : reader.GetInt32(StatCol.ApprovedCount)
                 };
                 return (stats, null);
             }

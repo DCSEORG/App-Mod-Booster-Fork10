@@ -89,14 +89,11 @@
                             <td>
                                 @if (exp.StatusName == "Draft")
                                 {
-                                    <form method="post" action="/api/expenses/@exp.ExpenseId/submit" style="display:inline;">
-                                        @Html.AntiForgeryToken()
-                                        <button type="button"
-                                                class="btn btn-secondary btn-sm"
-                                                onclick="submitExpense(@exp.ExpenseId)">
-                                            Submit
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="btn btn-secondary btn-sm"
+                                            onclick="submitExpense(@exp.ExpenseId)">
+                                        Submit
+                                    </button>
                                 }
                             </td>
                         </tr>
@@ -130,10 +127,12 @@
 async function submitExpense(id) {
     if (!confirm('Submit this expense for approval?')) return;
     try {
+        // POST to the REST API endpoint (/api/expenses/{id}/submit).
+        // ApiController endpoints do not enforce ASP.NET Core anti-forgery
+        // validation, so no CSRF token header is required here.
         const res = await fetch('/api/expenses/' + id + '/submit', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json',
-                       'RequestVerificationToken': document.querySelector('[name=__RequestVerificationToken]')?.value || '' }
+            headers: { 'Content-Type': 'application/json' }
         });
         const data = await res.json();
         if (res.ok) {
